@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Network Intrusion Detection Simulation</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis.min.css" rel="stylesheet" type="text/css" />
+    <style>
+        #network {
+            width: 100%;
+            height: 600px;
+            border: 1px solid lightgray;
+        }
+        #log {
+            height: 200px;
+            overflow-y: scroll;
+            background: #f9f9f9;
+            border: 1px solid #ccc;
+            padding: 5px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Network Intrusion Detection Visualization</h1>
+    <div id="network"></div>
+    <div id="log"></div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis.min.js"></script>
+    <script>
+        const socket = io();
+
+        let nodes = new vis.DataSet();
+        let edges = new vis.DataSet();
+        let network = null;
+        let logContainer = document.getElementById('log');
+
+        socket.on('initialData', ({ agents, connections }) => {
+            renderGraph(agents, connections);
+        });
+
+        socket.on('maliciousIPBroadcast', ({ from, to, maliciousIP }) => {
+            const edgeId = `${from}-${to}`;
+            edges.update({ id: edgeId, color: { color: 'red' } });
+            setTimeout(() => {
+                edges.update({ id: edgeId, color: { color: '#848484' } });
+            }, 2000);
+            logAction(`${from} sent malicious IP ${maliciousIP} to ${to}`);
+        });
+
+        function renderGraph(agents, connections) {
+            nodes.clear();
+            edges.clear();
+
+            Object.keys(agents).forEach(agentId => {
+                nodes.add({ id: agentId, label: agentId });
+            });
+
+            connections.forEach(conn => {
+                edges.add({
+                    id: `${conn.from}-${conn.to}`,
+                    from: conn.from,
+                    to: conn.to,
+                    arrows: 'to',
+                    color: { color: '#848484' }
+                });
+            });
+
+            const container = document.getElementById('network');
+            const data = { nodes: nodes, edges: edges };
+            const options = {
+                edges: {
+                    smooth: {
+                        type: 'continuous'
+                    }
+                }
+            };
+            network = new vis.Network(container, data, options);
+        }
+
+        function logAction(message) {
+            const entry = document.createElement('div');
+            entry.textContent = message;
+            logContainer.appendChild(entry);
+        }
+    </script>
+</body>
+</html>
