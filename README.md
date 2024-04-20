@@ -20,6 +20,8 @@ go run main.go
 ```
 # Simulation
 Project also has a part which simulates a multi-agent system for network intrusion detection using Express.js and Socket.IO. It visualizes the communication flow between agents on a dashboard.
+<img width="1726" alt="image" src="https://github.com/Ndrrr/Multiagent-IDS/assets/81439809/3523f57a-a66e-4d77-9725-d99f539ac549">
+
 
 ## Setup
 
